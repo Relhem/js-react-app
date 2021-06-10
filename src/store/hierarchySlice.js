@@ -113,7 +113,7 @@ export const handleUpdateAsync = createAsyncThunk(
         await updateNode(selectedId, options);
         thunkAPI.dispatch(setNodeById({ nodeId: selectedId, options }));
       } catch (error) {
-        throw error;
+        throw new Error(JSON.stringify(error.response));
       }
   }
 );
@@ -129,7 +129,7 @@ async (params, thunkAPI) => {
       const createdNode = createResult.data.message;
       thunkAPI.dispatch(setNodeById({ nodeId: createdNode.id, options: createdNode }));
     }).catch((error) => {
-      throw error;
+      throw new Error(JSON.stringify(error.response));
     });
 }
 );

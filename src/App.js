@@ -5,6 +5,7 @@ import Header from './views/header/Header';
 import Notification from './views/notifications/Notification';
 
 function App() {
+
   return (
     <div className="app">
         <Header></Header>

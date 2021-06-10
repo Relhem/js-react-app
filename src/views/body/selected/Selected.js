@@ -68,8 +68,8 @@ export default function Selected() {
 
       dispatch(handleUpdateAsync({ port, id, ip, nodeName })).then((result) => {
         if (result.error) {
-          // dispatch(setText({ text: `Ошибка: ${result.error.message}`, usedClass: 'alert-danger'}));
-          dispatch(showNotification({ text: `Ошибка: ${result.error.message}`, usedClasses: 'custom-notification_danger'}));
+          const error = JSON.parse(result.error.message);
+          dispatch(showNotification({ text: `Ошибка: ${error.data.message}`, usedClasses: 'custom-notification_danger'}));
         } else {
           setSavedState({ ip,
             port,

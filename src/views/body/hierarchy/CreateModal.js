@@ -20,8 +20,9 @@ export default function CreateModal(props) {
       }
       dispatch(handleCreateAsync({ nodeCreator, toggleIsCreating })).then((result) => {
         if (result.error) {
+          const error = JSON.parse(result.error.message);
           // dispatch(setText({ text: `Ошибка: ${result.error.message}`, usedClass: 'alert-danger'}));
-          dispatch(showNotification({ text: `Ошибка: ${result.error.message}`, usedClasses: 'custom-notification_danger' }));
+          dispatch(showNotification({ text: `Ошибка: ${error.data.message}`, usedClasses: 'custom-notification_danger' }));
           toggleIsCreating();  
         } else {
           // dispatch(setText({ text: `Узел ${nodeName} успешно создан`, usedClass: 'alert-success'}));
