@@ -107,17 +107,22 @@ export default function Selected() {
             onChange={(e) => { setIp(e.target.value); }}
             type="text" className={`form-control ${ ip && !validationUtils.checkIP(ip) ? 'is-invalid' : '' }`} placeholder="IP-адрес" aria-label="Введите IP узла..."/>
             <div className="invalid-feedback">
-              IP must have a valid value
+              IP-адрес введён некорректно
             </div>
         </div>
         <div className="input-group mb-3">
           <input
           disabled={selectedId == null}
           value={port}
-          onChange={(e) => { setPort(e.target.value) }}
+          onChange={(e) => {
+            const port = e.target.value;
+            if (port && !validationUtils.isNumber(e.target.value)) return;
+            setPort(port);
+            }
+          }
           type="text" className={`form-control ${ port && !validationUtils.checkPort(port) ? 'is-invalid' : '' }`} placeholder="Web-порт" aria-label="Введите порт..."/>
         <div className="invalid-feedback">
-              Port must have a valid value
+              Неверное значение порта
         </div>
         </div>
       </div>

@@ -71,12 +71,13 @@ export default function CreateModal(props) {
         && !validationUtils.checkIP(nodeCreator.object.IP) ? 'is-invalid' : ''}`}
       placeholder="IP-адрес" aria-label="Введите IP узла..."/>
       <div className="invalid-feedback">
-        IP must have a valid value
+        IP-адрес введён некорректно
       </div>
   </div>
   <div className="input-group mb-3">
     <input
       onChange={(e) => {
+        if (e.target.value && !validationUtils.isNumber(e.target.value)) return;
         const newNodeCreator = Object.assign({}, nodeCreator);
         nodeCreator.object.port = e.target.value;
         setNodeCreator(newNodeCreator);
@@ -86,7 +87,7 @@ export default function CreateModal(props) {
       type="text" className={`form-control ${nodeCreator.object.port
         && !validationUtils.checkPort(nodeCreator.object.port) ? 'is-invalid' : ''}`} placeholder="Web-порт" aria-label="Введите порт..."/>
       <div className="invalid-feedback">
-        Port must have a valid value
+        Неверное значение порта
       </div>
   </div>
               

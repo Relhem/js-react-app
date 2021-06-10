@@ -33,6 +33,6 @@ export default function Search() {
     onChange={(e) => {
       dispatch(setSearchLine({ searchLine: e.target.value }));
       fetchWhereAsync(e.target.value);}}
-    type="text" className="form-control" placeholder="Search..."/>
+    type="text" className="form-control" placeholder="Поиск..."/>
 </div>;   
 }
