@@ -25,7 +25,7 @@ export default function CreateModal(props) {
           toggleIsCreating();  
         } else {
           // dispatch(setText({ text: `Узел ${nodeName} успешно создан`, usedClass: 'alert-success'}));
-          dispatch(showNotification({ text: `Узел ${nodeName} успешно создан`, usedClasses: 'custom-notification_success' }));
+          dispatch(showNotification({ text: `✓ Узел ${nodeName} успешно создан`, usedClasses: 'custom-notification_success' }));
           toggleIsCreating(); 
         }
       });

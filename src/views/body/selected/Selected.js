@@ -76,7 +76,7 @@ export default function Selected() {
             id,
             nodeName });
           if (searchLine) dispatch(setFoundNodeById({ nodeId: id, options: { ip, port, name: nodeName, id } }));
-          dispatch(showNotification({ text: `Узел ${selectedNode.name} (ID: ${selectedId}) успешно обновлён`, usedClasses: 'custom-notification_info' }));
+          dispatch(showNotification({ text: `✓ Узел ${selectedNode.name} (ID: ${selectedId}) успешно обновлён`, usedClasses: 'custom-notification_info' }));
         }
       });
     };

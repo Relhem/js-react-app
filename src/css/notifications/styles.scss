@@ -10,8 +10,11 @@
 .custom-notification {
 
   &_invisible {
-    opacity: 0;
+    margin-right: -40vh;
   }
+
+  transition: opacity 0.5s;
+  transition: margin-right 0.4s;
 
   &_danger {
     color: #842029;
@@ -45,7 +48,6 @@
   }
 
   color: white;
-  transition: opacity 0.5s;
   font-size: 1.5vh;
   position: fixed;
   bottom: 2vh;
