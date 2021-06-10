@@ -127,10 +127,8 @@ async (params, thunkAPI) => {
     options.parentId = selectedId;
     return createNode(selectedId, options).then((createResult) => {
       const createdNode = createResult.data.message;
-      console.log(createdNode);
       thunkAPI.dispatch(setNodeById({ nodeId: createdNode.id, options: createdNode }));
     }).catch((error) => {
-      console.log('err', error);
       throw error;
     });
 }

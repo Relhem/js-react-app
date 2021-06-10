@@ -17,7 +17,7 @@ export default function Table() {
       return <div key={nodeObject.name}>
         <div className="table__dash"></div>
         <div className={`table__row ${selectedNodeId === nodeObject.id ? 'table__row_selected' : ''}`}
-          onClick={() => { console.log(nodeObject.id);
+          onClick={() => {
             dispatch(setNodeById({ nodeId: nodeObject.id, options: nodeObject }))
             dispatch(setSelectedNode({ nodeId: nodeObject.id })) }}>
           { nodeObject.name }

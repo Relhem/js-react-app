@@ -45,7 +45,6 @@ export default function HierarchyItem(props) {
         setIsOpen({ ...isOpen , [nodeId]: false });
       } else {
         dispatch(handleFetchChildrenForIdAsync({ id: node.id })).then((fetchResult) => {
-          console.log('fr', fetchResult);
           const { fetchedNewNodes } = fetchResult.payload;
           const newIsOpen = Object.assign({}, isOpen);
           fetchedNewNodes.forEach((nodeObject) => {

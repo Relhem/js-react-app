@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { setSelectedNode } from 'store/hierarchySlice';
 import { handleFetchWhereAsync, selectSearchLine, setSearchLine, clearFoundNodes, setIsSearching } from 'store/searchSlice';
 
 export default function Search() {
@@ -9,6 +10,7 @@ export default function Search() {
   const [timeoutId, setTimeoutId] = useState(-1);
 
   const fetchWhereAsync = (name) => {
+    dispatch(setSelectedNode({ nodeId: null }));
     dispatch(setIsSearching({ isSearching: true }));
     clearTimeout(timeoutId);
     if (name) {
@@ -21,6 +23,7 @@ export default function Search() {
     } else {
       dispatch(setIsSearching({ isSearching: false }));
       dispatch(clearFoundNodes());
+      dispatch(setSelectedNode({ nodeId: null }));
     }
   };
 
@@ -28,7 +31,6 @@ export default function Search() {
   <input 
     value={searchValue}
     onChange={(e) => {
-      console.log(e.target.value);
       dispatch(setSearchLine({ searchLine: e.target.value }));
       fetchWhereAsync(e.target.value);}}
     type="text" className="form-control" placeholder="Search..."/>

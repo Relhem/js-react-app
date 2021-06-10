@@ -55,7 +55,6 @@ const Hierarchy = () => {
       });
         setIsOpen(newIsOpen);
       } catch (error) {
-        console.log(error);
         dispatch(setText({ text: `Ошибка при загрузке: ${error}`, usedClass: 'alert-danger' }));
       }
     });

@@ -25,7 +25,7 @@ export default function CreateModal(props) {
           toggleIsCreating();  
         } else {
           // dispatch(setText({ text: `Узел ${nodeName} успешно создан`, usedClass: 'alert-success'}));
-          dispatch(showNotification({ text: `✓ Узел ${nodeName} успешно создан`, usedClasses: 'custom-notification_success' }));
+          dispatch(showNotification({ text: `✓ Узел «${nodeName}» успешно создан`, usedClasses: 'custom-notification_success' }));
           toggleIsCreating(); 
         }
       });
@@ -60,7 +60,6 @@ export default function CreateModal(props) {
     <input
       value={nodeCreator.object.IP}
       onChange={(e) => {
-        console.log('nc', nodeCreator);
         const newNodeCreator = Object.assign({}, nodeCreator);
         nodeCreator.object.IP = e.target.value;
         setNodeCreator(newNodeCreator);

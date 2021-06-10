@@ -17,9 +17,9 @@ export default function DeleteModal(props) {
         const { nodesToDelete } = deleteResult.payload;
         setNodeDeletor({ ...nodeDeletor, isDeleting: false });
         if (nodesToDelete.length == 1) {
-          dispatch(showNotification({ text: `✓ Узел ${selectedNode.name} успешно удалён`, usedClasses: 'custom-notification_info'}));
+          dispatch(showNotification({ text: `✓ Узел «${selectedNode.name}» успешно удалён`, usedClasses: 'custom-notification_info'}));
         } else {
-          dispatch(showNotification({ text: `✓ Узлы  ${nodesToDelete.join(', ')} успешно удалены`, usedClasses: 'custom-notification_info'}));
+          dispatch(showNotification({ text: `✓ Узлы  #${nodesToDelete.join(', #')} успешно удалены`, usedClasses: 'custom-notification_info'}));
         }
       });
     };
