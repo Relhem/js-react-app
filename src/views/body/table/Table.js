@@ -15,8 +15,8 @@ export default function Table() {
     const nodeElements = Object.keys(foundNodes).map((nodeIndex) => {
       const nodeObject = foundNodes[nodeIndex];
       return <div key={nodeObject.name}>
-        <div className="table__dash"></div>
-        <div className={`table__row ${selectedNodeId === nodeObject.id ? 'table__row_selected' : ''}`}
+        <div className="custom-table__dash"></div>
+        <div className={`custom-table__row ${selectedNodeId === nodeObject.id ? 'custom-table__row_selected' : ''}`}
           onClick={() => {
             dispatch(setNodeById({ nodeId: nodeObject.id, options: nodeObject }))
             dispatch(setSelectedNode({ nodeId: nodeObject.id })) }}>
@@ -27,15 +27,15 @@ export default function Table() {
 
     return <div>
       {
-        isSearching ?  <div className="table__no-entries">
+        isSearching ?  <div className="custom-table__no-entries">
         <Loader/>
       </div> : <div> {
-        Object.keys(foundNodes).length == 0 && searchLine ? <div className="table__no-entries">
+        Object.keys(foundNodes).length == 0 && searchLine ? <div className="custom-table__no-entries">
           Ничего не найдено
         </div> : '' }
         </div>
       }
-    <div className="table">
+    <div className="custom-table">
       {!isSearching ? nodeElements : ''}
     </div>
   </div>

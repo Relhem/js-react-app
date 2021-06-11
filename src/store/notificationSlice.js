@@ -1,8 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  text: 'none',
-  usedClass: '',
   notification: {
     isVisible: false,
     text: '',
@@ -52,11 +50,6 @@ export const notificationSlice = createSlice({
       const { text } = action.payload;
       state.notification.text = text;
     },
-    setText: (state, action) => {
-      const { text, usedClass } = action.payload;
-      state.text = text;
-      state.usedClass = usedClass;
-    },
     setNotificationVisibility: (state, action) => {
       const { visibility } = action.payload;
       state.notification.isVisible = visibility;
@@ -64,14 +57,8 @@ export const notificationSlice = createSlice({
   },
 });
 
-export const { setText } = notificationSlice.actions;
-
-
 export const selectNotificationText = (state) => state.notification.notification.text;
 export const selectNotificationVisibility = (state) => state.notification.notification.isVisible;
 export const selectNotificationUsedClasses = (state) => state.notification.notification.usedClasses;
-
-export const selectText = (state) => state.notification.text;
-export const usedClass = (state) => state.notification.usedClass;
 
 export default notificationSlice.reducer;

@@ -190,6 +190,9 @@ export const hierarchySlice = createSlice({
     name: 'hierarchy',
     initialState,
     reducers: {
+      clearNodes: (state) => {
+        state.nodes = {};
+      },
       setNodes: (state, action) => {
         const { nodes } = action.payload;
         nodes.forEach((node) => {
@@ -223,6 +226,7 @@ export const hierarchySlice = createSlice({
   });
 
   export const { setNodes,
+    clearNodes,
     toggleOpen,
     setSelectedNode,
     setIsOpen,

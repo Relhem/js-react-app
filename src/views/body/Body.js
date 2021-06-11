@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../../css/body/styles.scss';
 import Hierarchy from './hierarchy/Hierarchy';
 import Selected from './selected/Selected';
 import Search from './Search';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { selectSearchLine } from 'store/searchSlice';
 import Table from './table/Table';
+import { clearNodes, setSelectedNode } from 'store/hierarchySlice';
 
 const Body = () => {
-
+  const dispatch = useDispatch();
   const searchLine = useSelector(selectSearchLine);
+
+  useEffect(() => {
+    dispatch(clearNodes());
+    dispatch(setSelectedNode({ nodeId: null }));
+  }, [false]);
 
   const body = <div className="container main-container">
     <div className="row">

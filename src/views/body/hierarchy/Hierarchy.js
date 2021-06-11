@@ -11,7 +11,7 @@ import 'css/body/styles.scss';
 import CreateModal from 'views/body/hierarchy/CreateModal';
 import DeleteModal from 'views/body/hierarchy/DeleteModal';
 
-import { setText } from 'store/notificationSlice';
+import { setText, showNotification } from 'store/notificationSlice';
 
 const Hierarchy = () => {
   const dispatch = useDispatch();
@@ -55,7 +55,7 @@ const Hierarchy = () => {
       });
         setIsOpen(newIsOpen);
       } catch (error) {
-        dispatch(setText({ text: `Ошибка при загрузке: ${error}`, usedClass: 'alert-danger' }));
+        dispatch(showNotification({ text: `Ошибка при загрузке: ${error}`, usedClasses: 'alert-danger' }))
       }
     });
   }, [false]);

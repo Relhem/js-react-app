@@ -1,0 +1,32 @@
+.menu {
+    width: 100%;
+    background: white;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+
+    &__row {
+      display: flex;
+      &__item {
+        padding: 0px 15px;
+        margin-right: 10px;
+
+        &_selected {
+          color: #178bb2 !important;
+        }
+      }
+      a {
+        color: black;
+        .selected {
+          color: #178bb2 !important;
+        }
+        text-decoration: none;
+        transition: color .1s;
+        &:hover {
+          color: #178bb2 !important;
+        }
+      }
+    }
+
+}

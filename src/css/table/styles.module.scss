@@ -1,0 +1,32 @@
+.table-container {
+  width: 100%;
+  background: white;
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+
+  &__input {
+    width: 420px !important;
+  }
+
+  .is-invalid {
+    max-width: 300px !important;
+  }
+}
+
+.no-bottom-line {
+  border-bottom-width: 0 !important;
+}
+
+.sort-image {
+  width: 15px;
+  margin-left: 6px;
+  margin-top: -1px;
+  cursor: pointer;
+}
+
+.table-text-middle {
+  margin-top: 6px;
+  margin-left: 3px;
+}
