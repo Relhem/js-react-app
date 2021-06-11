@@ -12,6 +12,7 @@ import CreateModal from 'views/body/hierarchy/CreateModal';
 import DeleteModal from 'views/body/hierarchy/DeleteModal';
 
 import { setText, showNotification } from 'store/notificationSlice';
+import Loader from 'views/utils/Loader';
 
 const Hierarchy = () => {
   const dispatch = useDispatch();
@@ -19,6 +20,8 @@ const Hierarchy = () => {
   const nodes = useSelector(selectNodes);
 
   const [isOpen, setIsOpen] = useState({});
+
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [nodeDeletor, setNodeDeletor] = useState({
     targetId: null,
@@ -54,6 +57,7 @@ const Hierarchy = () => {
         newIsOpen[nodeId] = false;
       });
         setIsOpen(newIsOpen);
+        setIsLoaded(true);
       } catch (error) {
         dispatch(showNotification({ text: `Ошибка при загрузке: ${error}`, usedClasses: 'alert-danger' }))
       }
@@ -83,9 +87,15 @@ const Hierarchy = () => {
           selectedId={selectedId}
         ></CreateModal>: ''
     }
-    <div className="hierarchy">
-      {nodeElements}
-    </div>
+    {
+      isLoaded ?
+      <div className="hierarchy">
+        {nodeElements}
+      </div> :
+      <div className="text-center">
+        <Loader></Loader>
+      </div>
+    }
   </div>
 };
   

@@ -8,10 +8,12 @@ import { showNotification } from 'store/notificationSlice';
 import sortSvg from 'assets/sort.svg';
 import Loader from 'views/utils/Loader';
 
-import { SORT_CRITERIA, sortArrayByCriteria, searchFilter } from 'utils/tableUtils';
-
+import { SORT_CRITERIA, SEARCH_CRITERIA, sortArrayByCriteria, searchFilter, objectAndObjectInCopyAreSame } from 'utils/tableUtils';
+// let b = 1;
 export default function Table() {
     const dispatch = useDispatch();
+
+    const [sortOrder, setSortOrder] = useState(1);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -19,30 +21,52 @@ export default function Table() {
 
     const [nodes, setNodes] = useState([]);
 
+    const [nodesCopy, setNodesCopy] = useState([]);
+
     const [isFocusedOnIds, setIsFocusedOnIds] = useState([]);
 
     const [sortBy, setSortBy] = useState({ criteria: SORT_CRITERIA.ID, isNumber: true });
+
+    const [searchBy, setSearchBy] = useState(SEARCH_CRITERIA.NAME);
+
+    const [needsMore, setNeedsMore] = useState(false);
+
+    /* window.onscroll = function(ev) {
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+          const a = nodes;
+          for (let i = 0; i < 10; i += 1) {
+            a.push({ id: 100 + b, name: 'test', IP: '1.1.1.1', port: '1' });
+            b += 1;
+          }
+          setNodes([...a]);
+          console.log('AT BOTTOM');
+      }
+    }; */
 
     useEffect(() => {
       setIsFocusedOnIds([]);
     }, [search]);
 
     useEffect(() => {
-      const nodesArray = sortArrayByCriteria({ array: nodes, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber });
-      setNodes(nodesArray);
-    }, [sortBy]);
+      const nodesArray = sortArrayByCriteria({ array: nodes, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
+        setNodes(nodesArray);
+        setNodesCopy(nodesArray.slice());
+    }, [sortBy, sortOrder]);
 
     useEffect(() => {
       fetchNodes().then((fetchResult) => {
-        let nodesArray = fetchResult.data;
-        nodesArray = sortArrayByCriteria({ array: nodesArray, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber });
+        let nodesArray = sortArrayByCriteria({ array: fetchResult.data, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
         setNodes(nodesArray);
+        const copyArray = JSON.parse(JSON.stringify(nodesArray));
+        setNodesCopy(copyArray);
         setIsLoaded(true);
       });
     }, [false]);
 
     const handleSave = ({ nodeObject }) => {
       updateNode(nodeObject.id, nodeObject).then(() => {
+        const copyArray = JSON.parse(JSON.stringify(nodes));
+        setNodesCopy(copyArray);       
         dispatch(showNotification({ text: `✓ Узел «${nodeObject.name}» (ID: ${nodeObject.id}) успешно обновлён`, usedClasses: "custom-notification_info" }));
       }).catch((error) => {
         const message = error.response.data.message;
@@ -50,10 +74,24 @@ export default function Table() {
       });
     };
 
-    const nodesElements = searchFilter({ array: nodes, search, isFocusedOnIds }).map((nodeObject) => {
+    const sortOrderElement = <div className={`d-flex d-align-items-center ${styles['custom-select']}`}>
+      <div className="d-inline-block" style={{marginRight: '12px', marginTop: '3px'}}> Сортировать </div>
+      <div className="d-inline-block">
+        <select value={sortOrder} className={`form-select form-select-sm ${styles['select']}`}
+          onChange={() => {
+            const newValue = sortOrder * -1;
+            setSortOrder(newValue);
+          }} >
+          <option value={1}>По возрастанию</option>
+          <option value={-1}>По убыванию</option>
+        </select>
+      </div>
+    </div>
+
+    const nodesElements = searchFilter({ array: nodes, search, isFocusedOnIds, searchBy }).map((nodeObject) => {
       return <tr key={nodeObject.id}>
             <th scope="row">
-              <div className={styles['table-text-middle']}>
+              <div className={`${styles['table-text-middle']} text-left`}>
                 {nodeObject.id}
               </div>
             </th>
@@ -116,14 +154,16 @@ export default function Table() {
             </td>
 
             <td>
-            <div className={styles['table-text-middle']}>
+            <div className={`${styles['table-text-middle']} text-center`}>
                 {nodeObject.parentId}
               </div>
             </td>
             <td>
               <button className="float-end"
               onClick={() => { handleSave({ nodeObject }) }}
-              disabled={ !(nodeObject.name && nodeObject.name.trim() )
+              disabled={
+                objectAndObjectInCopyAreSame({ nodes, nodesCopy, nodeId: nodeObject.id })
+                || !(nodeObject.name && nodeObject.name.trim() )
                 || !nodeObject.IP || !validationUtils.checkIP(nodeObject.IP) 
                 || !nodeObject.port || !validationUtils.checkPort(nodeObject.port) }
               className="btn btn-primary">Сохранить</button>
@@ -134,55 +174,68 @@ export default function Table() {
     return <div className={`container ${styles['table-container']} overflow-auto`}>
       {
         isLoaded ? <div>
-                <div>
-            <div className="input-group mb-3">
+          <div>
+            <div className="d-flex d-flex-row mb-3">
               <input
                 value={search}
                 onChange={(e) => { setSearch(e.target.value) }}
                 type="text" className="form-control" placeholder="Поиск..."/>
+              <div className="input-group-append" style={{marginLeft: "3px", minWidth: '100px'}}>
+              <select value={searchBy} className={`form-select ${styles['select']}`}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            console.log(newValue);
+            setSearchBy(newValue);
+          }} >
+          <option value={SEARCH_CRITERIA.NAME}>Имя</option>
+          <option value={SEARCH_CRITERIA.IP}>IP</option>
+          <option value={SEARCH_CRITERIA.PORT}>Порт</option>
+        </select>
+              </div>
             </div>
           </div>
+          { sortOrderElement }
           <table className='table'>
             <thead>
               <tr className="table">
                 <th style={{whiteSpace: 'nowrap'}} className={styles['no-bottom-line']} scope="col">
                   #
                   <img alt="Сортировка"
-                  onClick={() => { setSortBy({ criteria: SORT_CRITERIA.ID, isNumber: true });
+                  onClick={() => { setSortBy({ criteria: SORT_CRITERIA.ID, isNumber: true, sortOrder });
                     dispatch(showNotification({ text: '✓ Отсортировано по ID узла', usedClasses: 'custom-notification_info' }));
                   }}
-                  src={sortSvg} className={styles['sort-image']}></img>
+                  src={sortSvg} className={`${styles['sort-image']} ${sortBy.criteria == SORT_CRITERIA.ID ? styles['filter-icon'] : ''}`}></img>
                 </th>
                 <th className={styles['no-bottom-line']} scope="col">
                   Узел
                   <img alt="Сортировка"
-                  onClick={() => { setSortBy({ criteria: SORT_CRITERIA.NAME, isNumber: false });
+                  onClick={() => { setSortBy({ criteria: SORT_CRITERIA.NAME, isNumber: false, sortOrder });
                     dispatch(showNotification({ text: '✓ Отсортировано по имени узла', usedClasses: 'custom-notification_info' }));
                   }}
-                  src={sortSvg} className={styles['sort-image']}></img>
+                  src={sortSvg} className={`${styles['sort-image']} ${sortBy.criteria == SORT_CRITERIA.NAME ? styles['filter-icon'] : ''}`}></img>
                 </th>
                 <th className={styles['no-bottom-line']} scope="col">
                   IP
                   <img alt="Сортировка"
-                  onClick={() => { setSortBy({ criteria: SORT_CRITERIA.IP, isNumber: false });
+                  onClick={() => { setSortBy({ criteria: SORT_CRITERIA.IP, isNumber: false, sortOrder });
                     dispatch(showNotification({ text: '✓ Отсортировано по IP узла', usedClasses: 'custom-notification_info' }));
                   }}
-                  src={sortSvg} className={styles['sort-image']}></img>
+                  src={sortSvg} className={`${styles['sort-image']} ${sortBy.criteria == SORT_CRITERIA.IP ? styles['filter-icon'] : ''}`}></img>
                 </th>
                 <th className={styles['no-bottom-line']} scope="col">
                   Порт
                   <img alt="Сортировка"
-                  onClick={() => { setSortBy({ criteria: SORT_CRITERIA.PORT, isNumber: true }); 
+                  onClick={() => { setSortBy({ criteria: SORT_CRITERIA.PORT, isNumber: true, sortOrder }); 
                     dispatch(showNotification({ text: '✓ Отсортировано по значению порта узла', usedClasses: 'custom-notification_info' }));}}
-                  src={sortSvg} className={styles['sort-image']}></img>
+                  src={sortSvg} className={`${styles['sort-image']} ${sortBy.criteria == SORT_CRITERIA.PORT ? styles['filter-icon'] : ''}`}></img>
                 </th>
                 <th style={{whiteSpace: 'nowrap'}} className={styles['no-bottom-line']} scope="col">
                   Родитель
                   <img alt="Сортировка"
-                  onClick={() => { setSortBy({ criteria: SORT_CRITERIA.PARENT, isNumber: true });
+                  onClick={() => { setSortBy({ criteria: SORT_CRITERIA.PARENT, isNumber: true, sortOrder });
                     dispatch(showNotification({ text: '✓ Отсортировано по родителю узла', usedClasses: 'custom-notification_info' }));
                   }}
-                  src={sortSvg} className={styles['sort-image']}></img>
+                  src={sortSvg} className={`${styles['sort-image']} ${sortBy.criteria == SORT_CRITERIA.PARENT ? styles['filter-icon'] : ''}`}></img>
                 </th>
                 <th className={styles['no-bottom-line']}></th>
               </tr>
@@ -193,11 +246,11 @@ export default function Table() {
               }
             </tbody>
           </table>
-        </div> : <div class="text-center mb-3 mt-3"> <Loader></Loader></div>
+        </div> : <div className="text-center mb-3 mt-3"> <Loader></Loader> </div>
       }
 
         { (isFocusedOnIds.length == 0) &&
-        searchFilter({ array: nodes, search }).length == 0 ? <div className="mt-3 mb-3 text-center">
+        searchFilter({ array: nodes, search, isFocusedOnIds, searchBy }).length == 0 ? <div className="mt-3 mb-3 text-center">
           Ничего не найдено
         </div> : ''
         }
