@@ -75,48 +75,44 @@ export default function Table() {
         </div>
             </td>
             <td>
-
-        <div className={`input-group ${styles['table-container__input']}`}>
-          <input
-            onFocus={() => { const focusedOn = isFocusedOnIds.slice();
-              if (!focusedOn.includes(nodeObject.id)) focusedOn.push(nodeObject.id);
-              setIsFocusedOnIds(focusedOn) }}
-            value={nodeObject.IP}
-            onChange={(e) => { 
-              const newIp = e.target.value;
-              nodeObject.IP = newIp;
-              const newNodes = nodes.slice();
-              setNodes(newNodes);
-             }}
-            type="text" className={`form-control ${ nodeObject.IP && !validationUtils.checkIP(nodeObject.IP) ? 'is-invalid' : '' }`}
-            placeholder="IP-адрес"/>
-            <div className="invalid-feedback">
-              IP-адрес введён некорректно
-            </div>
-        </div>
-
+              <div className={`input-group ${styles['table-container__input']}`}>
+                <input
+                  onFocus={() => { const focusedOn = isFocusedOnIds.slice();
+                    if (!focusedOn.includes(nodeObject.id)) focusedOn.push(nodeObject.id);
+                    setIsFocusedOnIds(focusedOn) }}
+                  value={nodeObject.IP}
+                  onChange={(e) => { 
+                    const newIp = e.target.value;
+                    nodeObject.IP = newIp;
+                    const newNodes = nodes.slice();
+                    setNodes(newNodes);
+                  }}
+                  type="text" className={`form-control ${ nodeObject.IP && !validationUtils.checkIP(nodeObject.IP) ? 'is-invalid' : '' }`}
+                  placeholder="IP-адрес"/>
+                  <div className="invalid-feedback">
+                    IP-адрес введён некорректно
+                  </div>
+              </div>
             </td>
             <td>
-
-            <div className={`input-group ${styles['table-container__input']}`}>
-          <input
-            onFocus={() => { const focusedOn = isFocusedOnIds.slice();
-              if (!focusedOn.includes(nodeObject.id)) focusedOn.push(nodeObject.id);
-              setIsFocusedOnIds(focusedOn) }}
-            value={nodeObject.port}
-            onChange={(e) => { 
-              const newPort = e.target.value;
-              nodeObject.port = newPort;
-              const newNodes = nodes.slice();
-              setNodes(newNodes);
-             }}
-            type="text" className={`form-control ${ nodeObject.port && !validationUtils.checkPort(nodeObject.port) ? 'is-invalid' : '' }`}
-            placeholder="Порт" aria-label="Введите порт..."/>
-            <div className="invalid-feedback">
-              Значение порта введено некорректно
-            </div>
-        </div>
-
+              <div className={`input-group ${styles['table-container__input']}`}>
+                <input
+                  onFocus={() => { const focusedOn = isFocusedOnIds.slice();
+                    if (!focusedOn.includes(nodeObject.id)) focusedOn.push(nodeObject.id);
+                    setIsFocusedOnIds(focusedOn) }}
+                  value={nodeObject.port}
+                  onChange={(e) => { 
+                    const newPort = e.target.value;
+                    nodeObject.port = newPort;
+                    const newNodes = nodes.slice();
+                    setNodes(newNodes);
+                  }}
+                  type="text" className={`form-control ${ nodeObject.port && !validationUtils.checkPort(nodeObject.port) ? 'is-invalid' : '' }`}
+                  placeholder="Порт" aria-label="Введите порт..."/>
+                  <div className="invalid-feedback">
+                    Значение порта введено некорректно
+                  </div>
+              </div>
             </td>
 
             <td>
