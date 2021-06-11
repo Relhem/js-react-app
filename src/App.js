@@ -8,7 +8,6 @@ import Notification from './views/notifications/Notification';
 import Table from './views/table/Table';
 
 function App(props) {
-  console.log('pr', props);
   return (
     <div className="app">
         <Header></Header>

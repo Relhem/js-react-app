@@ -60,7 +60,6 @@ export default function Selected() {
 
     const updateNode = (port, id, nodeName) => {
       if (nodeName.trim() === '') {
-        // dispatch(setText({ text: `Ошибка: не задано имя`, usedClass: 'alert-danger'}));
         dispatch(showNotification({ text: `Ошибка: не задано имя`, usedClasses: 'alert-danger'}))
         return;
       }

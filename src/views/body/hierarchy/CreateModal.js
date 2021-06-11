@@ -13,7 +13,6 @@ export default function CreateModal(props) {
     const createNode = (nodeCreator, toggleIsCreating) => {
       const nodeName = nodeCreator.object.name;
       if (nodeName.trim() == '') {
-        // dispatch(setText({ text: `Ошибка: не задано имя`, usedClass: 'alert-danger'}));
         dispatch(showNotification({ text: `Ошибка: не задано имя`, usedClasses: 'custom-notification_danger' }));
         toggleIsCreating();
         return;
@@ -21,11 +20,9 @@ export default function CreateModal(props) {
       dispatch(handleCreateAsync({ nodeCreator, toggleIsCreating })).then((result) => {
         if (result.error) {
           const error = JSON.parse(result.error.message);
-          // dispatch(setText({ text: `Ошибка: ${result.error.message}`, usedClass: 'alert-danger'}));
           dispatch(showNotification({ text: `Ошибка: ${error.data.message}`, usedClasses: 'custom-notification_danger' }));
           toggleIsCreating();  
         } else {
-          // dispatch(setText({ text: `Узел ${nodeName} успешно создан`, usedClass: 'alert-success'}));
           dispatch(showNotification({ text: `✓ Узел «${nodeName}» успешно создан`, usedClasses: 'custom-notification_success' }));
           toggleIsCreating(); 
         }
