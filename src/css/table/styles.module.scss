@@ -40,3 +40,19 @@
 .filter-icon {
   filter: invert(58%) sepia(79%) saturate(4392%) hue-rotate(164deg) brightness(84%) contrast(82%);
 }
+
+.down-arrow-block {
+  background: rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.5);
+  padding: 10px 0;
+  text-align: center;
+  cursor: pointer;
+}
+
+.undo-img {
+  position: absolute;
+  height: 12px;
+  margin-left: -22px;
+  margin-top: 14px;
+  cursor: pointer;
+}

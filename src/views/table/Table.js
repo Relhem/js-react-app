@@ -6,12 +6,18 @@ import { useDispatch } from 'react-redux';
 import { showNotification } from 'store/notificationSlice';
 
 import sortSvg from 'assets/sort.svg';
+import undoSvg from 'assets/undo.svg';
+
 import Loader from 'views/utils/Loader';
 
 import { SORT_CRITERIA, SEARCH_CRITERIA, sortArrayByCriteria, searchFilter, objectAndObjectInCopyAreSame } from 'utils/tableUtils';
-// let b = 1;
+
+let offset = 0, limit = 5;
+
 export default function Table() {
     const dispatch = useDispatch();
+    
+    const [hasMore, setHasMore] = useState(true);
 
     const [sortOrder, setSortOrder] = useState(1);
 
@@ -29,38 +35,75 @@ export default function Table() {
 
     const [searchBy, setSearchBy] = useState(SEARCH_CRITERIA.NAME);
 
-    const [needsMore, setNeedsMore] = useState(false);
+    const [isLoadingNew, setIsLoadingNew] = useState(false);
 
-    /* window.onscroll = function(ev) {
-      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-          const a = nodes;
-          for (let i = 0; i < 10; i += 1) {
-            a.push({ id: 100 + b, name: 'test', IP: '1.1.1.1', port: '1' });
-            b += 1;
+    const addNewNodes = () => {
+      if (search) return;
+      if (!isLoadingNew && hasMore) {
+        setIsLoadingNew(true);
+        const currentNodes = nodes;
+        fetchNodes({ params: { offset, limit }}).then((nodesResult) => {
+          const newNodes = nodesResult.data;
+          if (newNodes.length == 0)  {
+            setHasMore(false);
           }
-          setNodes([...a]);
-          console.log('AT BOTTOM');
+          newNodes.forEach((nodeObject) => {
+            currentNodes.push(nodeObject);
+          });
+          setNodes([...currentNodes]);
+          setNodesCopy([...JSON.parse(JSON.stringify(currentNodes))]);
+          offset += 5;
+          setIsLoadingNew(false);
+        });
       }
-    }; */
+    };
+
+    window.onscroll = function(ev) {
+      if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 50)) {
+        addNewNodes();
+      }
+    };
 
     useEffect(() => {
       setIsFocusedOnIds([]);
     }, [search]);
 
     useEffect(() => {
-      const nodesArray = sortArrayByCriteria({ array: nodes, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
+      const newNodes = JSON.parse(JSON.stringify(nodesCopy));
+      const nodesArray = sortArrayByCriteria({ array: newNodes, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
         setNodes(nodesArray);
-        setNodesCopy(nodesArray.slice());
+        setNodesCopy(JSON.parse(JSON.stringify(nodesArray)));
     }, [sortBy, sortOrder]);
 
-    useEffect(() => {
-      fetchNodes().then((fetchResult) => {
-        let nodesArray = sortArrayByCriteria({ array: fetchResult.data, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
-        setNodes(nodesArray);
-        const copyArray = JSON.parse(JSON.stringify(nodesArray));
-        setNodesCopy(copyArray);
-        setIsLoaded(true);
+    const fetchInitialNodes = async ({ fetchedNodes }) => {
+      return fetchNodes({ params: { offset, limit: 5 } }).then(async (fetchResult) => {
+        if (fetchResult.data.length == 0) {
+          setHasMore(false);
+          return;
+        }
+        fetchResult.data.forEach((nodeObject) => {
+          fetchedNodes.push(nodeObject);
+        });
+        const sortedNodes = sortArrayByCriteria({ array: fetchedNodes, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
+        const sortedNodesCopy = JSON.parse(JSON.stringify(sortedNodes));
+        setNodes([...sortedNodes]);
+        setNodesCopy([...sortedNodesCopy]);
+        offset += 5;
+        if (window.innerWidth <= document.body.clientWidth) {
+          await new Promise((resolve) => {
+            setTimeout(() => {
+              fetchInitialNodes({ fetchedNodes });
+              resolve();
+            }, 0);
+          });
+        }
       });
+    };
+
+    useEffect(async () => {
+      offset = 0;
+      await fetchInitialNodes({ fetchedNodes: [] });
+      setIsLoaded(true);
     }, [false]);
 
     const handleSave = ({ nodeObject }) => {
@@ -72,6 +115,20 @@ export default function Table() {
         const message = error.response.data.message;
         dispatch(showNotification({ text: `Ошибка: ${message}`, usedClasses: 'custom-notification_danger' }));
       });
+    };
+
+    const revert = ({ nodeId }) => {
+      try {
+        const objectInNodes = nodes.filter((nodeObject) => nodeObject.id == nodeId)[0];
+        const objectInNodesCopy = nodesCopy.slice(0).filter((nodeObject) => nodeObject.id == nodeId)[0];
+        objectInNodes.IP = objectInNodesCopy.IP;
+        objectInNodes.port = objectInNodesCopy.port;
+        objectInNodes.name = objectInNodesCopy.name;
+        setNodes([...nodes]);
+      } catch (error) {
+        console.error(error);
+        dispatch(showNotification({ text: 'Ошибка: не удалось вернуть состояние', usedClasses: 'custom-notification_danger' }));
+      }
     };
 
     const sortOrderElement = <div className={`d-flex d-align-items-center ${styles['custom-select']}`}>
@@ -138,8 +195,8 @@ export default function Table() {
                   onFocus={() => { const focusedOn = isFocusedOnIds.slice();
                     if (!focusedOn.includes(nodeObject.id)) focusedOn.push(nodeObject.id);
                     setIsFocusedOnIds(focusedOn) }}
-                  value={nodeObject.port}
-                  onChange={(e) => { 
+                    value={nodeObject.port}
+                    onChange={(e) => { 
                     const newPort = e.target.value;
                     nodeObject.port = newPort;
                     const newNodes = nodes.slice();
@@ -159,6 +216,14 @@ export default function Table() {
               </div>
             </td>
             <td>
+              {
+                !objectAndObjectInCopyAreSame({ nodes, nodesCopy, nodeId: nodeObject.id }) ?
+                <img onClick={() => { revert({ nodeId: nodeObject.id }) }}
+                  src={undoSvg}
+                  className={styles['undo-img']}></img>
+                : ''
+              }
+              
               <button className="float-end"
               onClick={() => { handleSave({ nodeObject }) }}
               disabled={
@@ -184,7 +249,6 @@ export default function Table() {
               <select value={searchBy} className={`form-select ${styles['select']}`}
           onChange={(e) => {
             const newValue = e.target.value;
-            console.log(newValue);
             setSearchBy(newValue);
           }} >
           <option value={SEARCH_CRITERIA.NAME}>Имя</option>
@@ -246,21 +310,19 @@ export default function Table() {
               }
             </tbody>
           </table>
-        </div> : <div className="text-center mb-3 mt-3"> <Loader></Loader> </div>
+        </div> : <div className="text-center mb-3 mt-3" style={{height: '70px'}}> <Loader></Loader> </div>
       }
 
-        { (isFocusedOnIds.length == 0) &&
+        { (isFocusedOnIds.length == 0) && (isLoaded) &&
         searchFilter({ array: nodes, search, isFocusedOnIds, searchBy }).length == 0 ? <div className="mt-3 mb-3 text-center">
           Ничего не найдено
         </div> : ''
         }
+        {
+          hasMore && !search ?
+          <div onClick={() => { addNewNodes() }} className={styles['down-arrow-block']}>
+            <div>&#8675;</div>
+          </div>  : ''
+        }
     </div>
 }
-
-
-    /* const [nodeCreator, setNodeCreator] = useState({
-      port: '',
-      name: '',
-      ip: '',
-      parentId: '',
-    }); */

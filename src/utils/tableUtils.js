@@ -31,13 +31,9 @@ export function objectAndObjectInCopyAreSame({ nodes, nodesCopy, nodeId }) {
       const objectInNodes = nodes.filter((nodeObject) => nodeObject.id == nodeId)[0];
       const objectInNodesCopy = nodesCopy.slice(0).filter((nodeObject) => nodeObject.id == nodeId)[0];
 
-      console.log('in nodes', objectInNodes);
-      console.log('in copy', objectInNodesCopy);
-      console.log(objectInNodes == objectInNodesCopy);
-
-      if (objectInNodes.IP !== objectInNodesCopy.IP) return false;
-      if (objectInNodes.name !== objectInNodesCopy.name) return false;
-      if (objectInNodes.port !== objectInNodesCopy.port) return false;
+      if (objectInNodes.IP != objectInNodesCopy.IP) return false;
+      if (objectInNodes.name != objectInNodesCopy.name) return false;
+      if (objectInNodes.port != objectInNodesCopy.port) return false;
 
     } catch {
       return true;
