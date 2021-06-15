@@ -18,16 +18,16 @@ export function fetchChildrenForId(id) {
 }
 
 export function deleteNode(id) {
-    const axiosDelete = axios.delete(`${HOST}/api/nodes/delete/${id}`);
+    const axiosDelete = axios.delete(`${HOST}/api/nodes/${id}`);
     return axiosDelete;
 }
 
 export function updateNode(id, options) {
-    const axiosPut = axios.put(`${HOST}/api/nodes/update/${id}`, options);
+    const axiosPut = axios.put(`${HOST}/api/nodes/${id}`, options);
     return axiosPut;
 }
 
 export function createNode(id, options) {
-    const axiosPost = axios.post(`${HOST}/api/nodes/create/`, options);
+    const axiosPost = axios.post(`${HOST}/api/nodes/`, options);
     return axiosPost;
 }

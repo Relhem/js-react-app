@@ -15,7 +15,7 @@ export default function Search() {
     clearTimeout(timeoutId);
     if (name) {
       const id = setTimeout(() => {
-        dispatch(handleFetchWhereAsync({ name })).then(() => {
+        dispatch(handleFetchWhereAsync({ whereNameIsLike: name })).then(() => {
           dispatch(setIsSearching({ isSearching: false }));
         });
       }, 200);
