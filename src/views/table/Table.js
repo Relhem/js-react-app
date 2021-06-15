@@ -128,8 +128,9 @@ export default function Table() {
       </div>
     </div>
 
-    const nodesElements = searchFilter({ array: nodes, search, isFocusedOnIds, searchBy }).map((nodeObject, nodeIndex) => {
-      return <tr key={nodeObject.id}>
+    const searchFilterObject = searchFilter({ array: nodes, search, isFocusedOnIds, searchBy });
+    const nodesElements = nodes.map((nodeObject, nodeIndex) => {
+      return <tr key={nodeObject.id} className={ `${ searchFilterObject.map((object) => object.id).includes(nodeObject.id) ? '' : 'd-none' }`}>
             <th scope="row">
               <div className={`${styles['table-text-middle']} text-left`}>
                   {nodeObject.id}
