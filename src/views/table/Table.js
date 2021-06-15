@@ -2,7 +2,7 @@ import styles from 'css/table/styles.module.scss';
 import { useEffect, useState } from 'react';
 import { fetchNodes, updateNode } from 'api/hierarchyAPI';
 import validationUtils from 'utils/validationUtils';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { showNotification } from 'store/notificationSlice';
 
 import sortSvg from 'assets/sort.svg';
@@ -10,12 +10,24 @@ import undoSvg from 'assets/undo.svg';
 
 import Loader from 'views/utils/Loader';
 
+import {
+  handleSaveThunk,
+  revertChangesThunk,
+  addNewNodesThunk,
+  setNodes,
+  setNodesCopy,
+  selectNodes,
+  selectNodesCopy } from 'store/tableSlice';
+
 import { SORT_CRITERIA, SEARCH_CRITERIA, sortArrayByCriteria, searchFilter, objectAndObjectInCopyAreSame } from 'utils/tableUtils';
 
 let offset = 0, limit = 5;
 
 export default function Table() {
     const dispatch = useDispatch();
+
+    const nodes = useSelector(selectNodes);
+    const nodesCopy = useSelector(selectNodesCopy);
     
     const [hasMore, setHasMore] = useState(true);
 
@@ -24,10 +36,6 @@ export default function Table() {
     const [isLoaded, setIsLoaded] = useState(false);
 
     const [search, setSearch] = useState('');
-
-    const [nodes, setNodes] = useState([]);
-
-    const [nodesCopy, setNodesCopy] = useState([]);
 
     const [isFocusedOnIds, setIsFocusedOnIds] = useState([]);
 
@@ -41,19 +49,10 @@ export default function Table() {
       if (search) return;
       if (!isLoadingNew && hasMore) {
         setIsLoadingNew(true);
-        const currentNodes = nodes;
-        fetchNodes({ params: { offset, limit }}).then((nodesResult) => {
-          const newNodes = nodesResult.data;
-          if (newNodes.length == 0)  {
-            setHasMore(false);
-          }
-          newNodes.forEach((nodeObject) => {
-            currentNodes.push(nodeObject);
-          });
-          setNodes([...currentNodes]);
-          setNodesCopy([...JSON.parse(JSON.stringify(currentNodes))]);
+        dispatch(addNewNodesThunk({ offset, limit })).then(({ payload }) => {
           offset += 5;
           setIsLoadingNew(false);
+          if (payload.newNodesLength == 0) setHasMore(false);
         });
       }
     };
@@ -69,10 +68,9 @@ export default function Table() {
     }, [search]);
 
     useEffect(() => {
-      const newNodes = JSON.parse(JSON.stringify(nodesCopy));
-      const nodesArray = sortArrayByCriteria({ array: newNodes, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
-        setNodes(nodesArray);
-        setNodesCopy(JSON.parse(JSON.stringify(nodesArray)));
+      const nodesArray = sortArrayByCriteria({ array: nodes, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
+        dispatch(setNodes({ nodes: nodesArray }));
+        dispatch(setNodesCopy({ nodes: nodesArray }));
     }, [sortBy, sortOrder]);
 
     const fetchInitialNodes = async ({ fetchedNodes }) => {
@@ -85,9 +83,8 @@ export default function Table() {
           fetchedNodes.push(nodeObject);
         });
         const sortedNodes = sortArrayByCriteria({ array: fetchedNodes, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
-        const sortedNodesCopy = JSON.parse(JSON.stringify(sortedNodes));
-        setNodes([...sortedNodes]);
-        setNodesCopy([...sortedNodesCopy]);
+        dispatch(setNodes({ nodes: [...sortedNodes] }));
+        dispatch(setNodesCopy({ nodes: [...sortedNodes] }));
         offset += 5;
         if (window.innerWidth <= document.body.clientWidth) {
           await new Promise((resolve) => {
@@ -107,28 +104,14 @@ export default function Table() {
     }, [false]);
 
     const handleSave = ({ nodeObject }) => {
-      updateNode(nodeObject.id, nodeObject).then(() => {
-        const copyArray = JSON.parse(JSON.stringify(nodes));
-        setNodesCopy(copyArray);       
-        dispatch(showNotification({ text: `✓ Узел «${nodeObject.name}» (ID: ${nodeObject.id}) успешно обновлён`, usedClasses: "custom-notification_info" }));
-      }).catch((error) => {
-        const message = error.response.data.message;
-        dispatch(showNotification({ text: `Ошибка: ${message}`, usedClasses: 'custom-notification_danger' }));
+      dispatch(handleSaveThunk({ nodeObject })).then((result) => {
+        if (result.error) {
+          const error = JSON.parse(result.error.message);
+          dispatch(showNotification({ text: `Ошибка: ${error}`, usedClasses: 'custom-notification_danger' }));
+        } else {
+          dispatch(showNotification({ text: `✓ Узел «${nodeObject.name}» (ID: ${nodeObject.id}) успешно обновлён`, usedClasses: "custom-notification_info" }));  
+        }
       });
-    };
-
-    const revert = ({ nodeId }) => {
-      try {
-        const objectInNodes = nodes.filter((nodeObject) => nodeObject.id == nodeId)[0];
-        const objectInNodesCopy = nodesCopy.slice(0).filter((nodeObject) => nodeObject.id == nodeId)[0];
-        objectInNodes.IP = objectInNodesCopy.IP;
-        objectInNodes.port = objectInNodesCopy.port;
-        objectInNodes.name = objectInNodesCopy.name;
-        setNodes([...nodes]);
-      } catch (error) {
-        console.error(error);
-        dispatch(showNotification({ text: 'Ошибка: не удалось вернуть состояние', usedClasses: 'custom-notification_danger' }));
-      }
     };
 
     const sortOrderElement = <div className={`d-flex d-align-items-center ${styles['custom-select']}`}>
@@ -145,11 +128,11 @@ export default function Table() {
       </div>
     </div>
 
-    const nodesElements = searchFilter({ array: nodes, search, isFocusedOnIds, searchBy }).map((nodeObject) => {
+    const nodesElements = searchFilter({ array: nodes, search, isFocusedOnIds, searchBy }).map((nodeObject, nodeIndex) => {
       return <tr key={nodeObject.id}>
             <th scope="row">
               <div className={`${styles['table-text-middle']} text-left`}>
-                {nodeObject.id}
+                  {nodeObject.id}
               </div>
             </th>
             <td>
@@ -161,10 +144,11 @@ export default function Table() {
             value={nodeObject.name}
             onChange={(e) => { 
               const newName = e.target.value;
-              nodeObject.name = newName;
-              const newNodes = nodes.slice();
-              setNodes(newNodes);
-             }}
+              const newNode = Object.assign({}, nodeObject);
+              newNode.name = newName;
+              const newNodes = Object.assign([...nodes], { [nodeIndex] : newNode });
+              dispatch(setNodes({ nodes: newNodes }));
+            }}
             type="text" className={`form-control`}
             placeholder="Имя"/>
         </div>
@@ -175,15 +159,16 @@ export default function Table() {
                   onFocus={() => { const focusedOn = isFocusedOnIds.slice();
                     if (!focusedOn.includes(nodeObject.id)) focusedOn.push(nodeObject.id);
                     setIsFocusedOnIds(focusedOn) }}
-                  value={nodeObject.IP}
-                  onChange={(e) => { 
-                    const newIp = e.target.value;
-                    nodeObject.IP = newIp;
-                    const newNodes = nodes.slice();
-                    setNodes(newNodes);
-                  }}
-                  type="text" className={`form-control ${ nodeObject.IP && !validationUtils.checkIP(nodeObject.IP) ? 'is-invalid' : '' }`}
-                  placeholder="IP-адрес"/>
+                    value={nodeObject.IP}
+                    onChange={(e) => { 
+                      const newIp = e.target.value;
+                      const newNode = Object.assign({}, nodeObject);
+                      newNode.IP = newIp;
+                      const newNodes = Object.assign([...nodes], { [nodeIndex] : newNode });
+                      dispatch(setNodes({ nodes: newNodes }));
+                    }}
+                    type="text" className={`form-control ${ nodeObject.IP && !validationUtils.checkIP(nodeObject.IP) ? 'is-invalid' : '' }`}
+                    placeholder="IP-адрес"/>
                   <div className="invalid-feedback">
                     IP-адрес введён некорректно
                   </div>
@@ -197,11 +182,12 @@ export default function Table() {
                     setIsFocusedOnIds(focusedOn) }}
                     value={nodeObject.port}
                     onChange={(e) => { 
-                    const newPort = e.target.value;
-                    nodeObject.port = newPort;
-                    const newNodes = nodes.slice();
-                    setNodes(newNodes);
-                  }}
+                      const newPort = e.target.value;
+                      const newNode = Object.assign({}, nodeObject);
+                      newNode.port = newPort;
+                      const newNodes = Object.assign([...nodes], { [nodeIndex] : newNode });
+                      dispatch(setNodes({ nodes: newNodes }));
+                    }}
                   type="text" className={`form-control ${ nodeObject.port && !validationUtils.checkPort(nodeObject.port) ? 'is-invalid' : '' }`}
                   placeholder="Порт" aria-label="Введите порт..."/>
                   <div className="invalid-feedback">
@@ -218,12 +204,12 @@ export default function Table() {
             <td>
               {
                 !objectAndObjectInCopyAreSame({ nodes, nodesCopy, nodeId: nodeObject.id }) ?
-                <img onClick={() => { revert({ nodeId: nodeObject.id }) }}
+                <img onClick={() => { dispatch(revertChangesThunk({ nodeId: nodeObject.id, nodeIndex })) }}
                   src={undoSvg}
                   className={styles['undo-img']}></img>
                 : ''
               }
-              
+
               <button className="float-end"
               onClick={() => { handleSave({ nodeObject }) }}
               disabled={

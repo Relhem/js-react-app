@@ -3,6 +3,7 @@ import counterReducer from 'features/counter/counterSlice';
 import hierarchyReducer from 'store/hierarchySlice';
 import notificationReducer from 'store/notificationSlice';
 import searchSliceReducer from './searchSlice';
+import tableSliceReducer from './tableSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,5 +11,6 @@ export const store = configureStore({
     hierarchy: hierarchyReducer,
     notification: notificationReducer,
     search: searchSliceReducer,
+    table: tableSliceReducer,
   },
 });
