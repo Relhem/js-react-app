@@ -5,6 +5,7 @@ import { sortArrayByCriteria } from 'utils/tableUtils';
 const initialState = {
     nodes: [],
     nodesCopy: [],
+    hasMore: true,
   };
 
   export const addNewNodesThunk = createAsyncThunk(
@@ -15,7 +16,11 @@ const initialState = {
       const nodes = selectNodes(thunkAPI.getState());
       const currentNodes = nodes.slice();
       const nodesResult = await fetchNodes({ params: { offset, limit }});
-      const newNodes = nodesResult.data;
+
+      const newNodes = nodesResult.data.dbResponse;
+      const { allCount } = nodesResult.data;
+      if (offset >= allCount) thunkAPI.dispatch(tableSlice.actions.setHasMore({ hasMore: false }));
+
       const newNodesLength = newNodes.length;
       newNodes.forEach((nodeObject) => {
         currentNodes.push(nodeObject);
@@ -63,16 +68,19 @@ export const fetchNewNodesThunk = createAsyncThunk(
   'table/fetchInitialNodesThunk',
   async (params, thunkAPI) => {
     const nodes = selectNodes(thunkAPI.getState());
-
     const { offset, limit, sortBy, sortOrder } = params;
     const fetchResult = await fetchNodes({ params: { offset, limit } });
-    const hasMore = true;
-    if (fetchResult.data.length == 0) hasMore = false;
-    const fetchedNodes = fetchResult.data;
+
+    const fetchedNodes = fetchResult.data.dbResponse;
+    const { allCount } = fetchResult.data;
+
     const sortedNodes = sortArrayByCriteria({ array: [...nodes, ...fetchedNodes], sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
     thunkAPI.dispatch(setNodes({ nodes: [...sortedNodes] }));
     thunkAPI.dispatch(setNodesCopy({ nodes: [...sortedNodes] }));
-    return { hasMore };
+
+    if (offset >= allCount) thunkAPI.dispatch(tableSlice.actions.setHasMore({ hasMore: false }));
+    console.log(offset, allCount, selectHasMore(thunkAPI.getState()));
+    return { hasMore: selectHasMore(thunkAPI.getState()) }
   }
 );
 
@@ -81,6 +89,10 @@ export const tableSlice = createSlice({
     name: 'table',
     initialState,
     reducers: {
+      setHasMore(state, action) {
+        const { hasMore } = action.payload;
+        state.hasMore = hasMore;
+      },
       purgeNodes(state) {
         state.nodes = [];
         state.nodesCopy = [];
@@ -99,6 +111,7 @@ export const tableSlice = createSlice({
 export const selectNodes = (state) => state.table.nodes;
 export const selectNodesCopy = (state) => state.table.nodesCopy;
 export const selectOffset = (state) => state.table.offset;
+export const selectHasMore = (state) => state.table.hasMore;
 
 export const { setNodes, setNodesCopy, setOffset, purgeNodes } = tableSlice.actions;
 

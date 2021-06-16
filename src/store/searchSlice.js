@@ -11,8 +11,9 @@ export const handleFetchWhereAsync = createAsyncThunk(
   'search/handleFetchWhereAsync',
   async (params, thunkAPI) => {
       return fetchNodesWhereName(params).then((fetchResult) => {
+        const nodeObjects = fetchResult.data.dbResponse;
         thunkAPI.dispatch(searchSlice.actions.clearFoundNodes());
-        thunkAPI.dispatch(searchSlice.actions.setNodes({ nodes: fetchResult.data }));
+        thunkAPI.dispatch(searchSlice.actions.setNodes({ nodes: nodeObjects }));
       }).catch((error) => {
         throw error;
       });

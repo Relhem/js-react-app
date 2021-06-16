@@ -19,7 +19,8 @@ import {
   setNodesCopy,
   selectNodes,
   selectNodesCopy, 
-  purgeNodes} from 'store/tableSlice';
+  purgeNodes,
+  selectHasMore} from 'store/tableSlice';
 
 import { SORT_CRITERIA, SEARCH_CRITERIA, sortArrayByCriteria, searchFilter, objectAndObjectInCopyAreSame } from 'utils/tableUtils';
 
@@ -30,8 +31,7 @@ export default function Table() {
 
     const nodes = useSelector(selectNodes);
     const nodesCopy = useSelector(selectNodesCopy);
-    
-    const [hasMore, setHasMore] = useState(true);
+    const hasMore = useSelector(selectHasMore);
 
     const [sortOrder, setSortOrder] = useState(1);
 
@@ -51,10 +51,9 @@ export default function Table() {
       if (search) return;
       if (!isLoadingNew && hasMore) {
         setIsLoadingNew(true);
-        dispatch(addNewNodesThunk({ offset, limit })).then(({ payload }) => {
+        dispatch(addNewNodesThunk({ offset, limit })).then(() => {
           offset += 5;
           setIsLoadingNew(false);
-          if (payload.newNodesLength == 0) setHasMore(false);
         });
       }
     };
@@ -77,20 +76,17 @@ export default function Table() {
 
     const fetchInitialNodes = async () => {
       const dispatchResult = await dispatch(fetchNewNodesThunk({ offset, limit, sortBy, sortOrder }));
-      if (!dispatchResult.payload) return;
       const { hasMore } = dispatchResult.payload;
-      if (!hasMore) {
-        setHasMore(false);
-        return;
-      }
       offset += 5;
       if (window.innerWidth <= document.body.clientWidth) {
-        await new Promise((resolve) => {
-          setTimeout(async () => {
-            fetchInitialNodes();
-            resolve();
-          }, 0);
-        });
+        if (hasMore) {
+          await new Promise((resolve) => {
+            setTimeout(async () => {
+                fetchInitialNodes();
+                resolve();
+            }, 0);
+          });
+        }
       }
     };
 
