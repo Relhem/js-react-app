@@ -1,6 +1,5 @@
 import React from 'react';
 import { Route } from 'react-router';
-import './css/index.scss';
 import Body from './views/body/Body';
 import Header from './views/header/Header';
 import Menu from './views/menu/Menu';
