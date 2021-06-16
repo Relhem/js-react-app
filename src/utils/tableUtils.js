@@ -53,3 +53,5 @@ export const searchFilter = ({ array, search, isFocusedOnIds, searchBy }) => {
   });
   return newArray;
 }
+
+

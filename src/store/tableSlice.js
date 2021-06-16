@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { updateNode, fetchNodes } from 'api/hierarchyAPI';
+import { sortArrayByCriteria } from 'utils/tableUtils';
 
 const initialState = {
     nodes: [],
@@ -58,10 +59,32 @@ const initialState = {
     }
   );
 
+export const fetchNewNodesThunk = createAsyncThunk(
+  'table/fetchInitialNodesThunk',
+  async (params, thunkAPI) => {
+    const nodes = selectNodes(thunkAPI.getState());
+
+    const { offset, limit, sortBy, sortOrder } = params;
+    const fetchResult = await fetchNodes({ params: { offset, limit } });
+    const hasMore = true;
+    if (fetchResult.data.length == 0) hasMore = false;
+    const fetchedNodes = fetchResult.data;
+    const sortedNodes = sortArrayByCriteria({ array: [...nodes, ...fetchedNodes], sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
+    thunkAPI.dispatch(setNodes({ nodes: [...sortedNodes] }));
+    thunkAPI.dispatch(setNodesCopy({ nodes: [...sortedNodes] }));
+    return { hasMore };
+  }
+);
+
+
 export const tableSlice = createSlice({
     name: 'table',
     initialState,
     reducers: {
+      purgeNodes(state) {
+        state.nodes = [];
+        state.nodesCopy = [];
+      },
       setNodes: (state, action) => {
         const { nodes } = action.payload;
         state.nodes = nodes;
@@ -75,7 +98,8 @@ export const tableSlice = createSlice({
 
 export const selectNodes = (state) => state.table.nodes;
 export const selectNodesCopy = (state) => state.table.nodesCopy;
+export const selectOffset = (state) => state.table.offset;
 
-export const { setNodes, setNodesCopy } = tableSlice.actions;
+export const { setNodes, setNodesCopy, setOffset, purgeNodes } = tableSlice.actions;
 
 export default tableSlice.reducer;

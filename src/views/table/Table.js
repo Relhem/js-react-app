@@ -11,13 +11,15 @@ import undoSvg from 'assets/undo.svg';
 import Loader from 'views/utils/Loader';
 
 import {
+  fetchNewNodesThunk,
   handleSaveThunk,
   revertChangesThunk,
   addNewNodesThunk,
   setNodes,
   setNodesCopy,
   selectNodes,
-  selectNodesCopy } from 'store/tableSlice';
+  selectNodesCopy, 
+  purgeNodes} from 'store/tableSlice';
 
 import { SORT_CRITERIA, SEARCH_CRITERIA, sortArrayByCriteria, searchFilter, objectAndObjectInCopyAreSame } from 'utils/tableUtils';
 
@@ -69,37 +71,33 @@ export default function Table() {
 
     useEffect(() => {
       const nodesArray = sortArrayByCriteria({ array: nodes, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
-        dispatch(setNodes({ nodes: nodesArray }));
-        dispatch(setNodesCopy({ nodes: nodesArray }));
+      dispatch(setNodes({ nodes: nodesArray }));
+      dispatch(setNodesCopy({ nodes: nodesArray }));
     }, [sortBy, sortOrder]);
 
-    const fetchInitialNodes = async ({ fetchedNodes }) => {
-      return fetchNodes({ params: { offset, limit: 5 } }).then(async (fetchResult) => {
-        if (fetchResult.data.length == 0) {
-          setHasMore(false);
-          return;
-        }
-        fetchResult.data.forEach((nodeObject) => {
-          fetchedNodes.push(nodeObject);
+    const fetchInitialNodes = async () => {
+      const dispatchResult = await dispatch(fetchNewNodesThunk({ offset, limit, sortBy, sortOrder }));
+      if (!dispatchResult.payload) return;
+      const { hasMore } = dispatchResult.payload;
+      if (!hasMore) {
+        setHasMore(false);
+        return;
+      }
+      offset += 5;
+      if (window.innerWidth <= document.body.clientWidth) {
+        await new Promise((resolve) => {
+          setTimeout(async () => {
+            fetchInitialNodes();
+            resolve();
+          }, 0);
         });
-        const sortedNodes = sortArrayByCriteria({ array: fetchedNodes, sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
-        dispatch(setNodes({ nodes: [...sortedNodes] }));
-        dispatch(setNodesCopy({ nodes: [...sortedNodes] }));
-        offset += 5;
-        if (window.innerWidth <= document.body.clientWidth) {
-          await new Promise((resolve) => {
-            setTimeout(() => {
-              fetchInitialNodes({ fetchedNodes });
-              resolve();
-            }, 0);
-          });
-        }
-      });
+      }
     };
 
     useEffect(async () => {
       offset = 0;
-      await fetchInitialNodes({ fetchedNodes: [] });
+      dispatch(purgeNodes());
+      fetchInitialNodes();
       setIsLoaded(true);
     }, [false]);
 
@@ -297,7 +295,7 @@ export default function Table() {
               }
             </tbody>
           </table>
-        </div> : <div className="text-center mb-3 mt-3" style={{height: '70px'}}> <Loader></Loader> </div>
+        </div> : <div className="text-center mb-3 mt-3" style={{height: '110px'}}> <Loader></Loader> </div>
       }
 
         { (isFocusedOnIds.length == 0) && (isLoaded) &&
@@ -306,7 +304,7 @@ export default function Table() {
         </div> : ''
         }
         {
-          hasMore && !search ?
+          hasMore && !search && isLoaded ?
           <div onClick={() => { addNewNodes() }} className={styles['down-arrow-block']}>
             <div>&#8675;</div>
           </div>  : ''
