@@ -8,8 +8,11 @@ import { selectSearchLine } from 'store/searchSlice';
 import Table from './table/Table';
 import { clearNodes, setSelectedNode } from 'store/hierarchySlice';
 
+import { Trans, t, useTranslation } from 'react-i18next';
+
 const Body = () => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const searchLine = useSelector(selectSearchLine);
 
   useEffect(() => {
@@ -20,7 +23,7 @@ const Body = () => {
   const body = <div className="container main-container">
     <div className="row">
       <div className="col col-md-8">
-        <div className="main-container__table-name">Иерархия узлов</div>
+        <div className="main-container__table-name">{t('Nodes hierarchy')}</div>
       </div>
       <div className="col col-md-4">
       <div className="main-container__table-name main-container__table-name_mg"></div>

@@ -3,8 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedNode } from 'store/hierarchySlice';
 import { handleFetchWhereAsync, selectSearchLine, setSearchLine, clearFoundNodes, setIsSearching } from 'store/searchSlice';
 
+import { useTranslation } from 'react-i18next';
+
 export default function Search() {
   const dispatch = useDispatch();
+  const {t} = useTranslation();
+
   const searchValue = useSelector(selectSearchLine);
 
   const [timeoutId, setTimeoutId] = useState(-1);
@@ -33,6 +37,6 @@ export default function Search() {
     onChange={(e) => {
       dispatch(setSearchLine({ searchLine: e.target.value }));
       fetchWhereAsync(e.target.value);}}
-    type="text" className="form-control" placeholder="Поиск..."/>
+    type="text" className="form-control" placeholder={`${t('Search')}...`}/>
 </div>;   
 }

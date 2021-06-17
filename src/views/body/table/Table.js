@@ -4,8 +4,11 @@ import { selectFoundNodes, selectIsSearching, selectSearchLine } from "store/sea
 
 import Loader from 'views/utils/Loader';
 
+import { useTranslation } from "react-i18next";
+
 export default function Table() {
     const dispatch = useDispatch();
+    const { t } = useTranslation();
 
     const foundNodes = useSelector(selectFoundNodes);
     const selectedNodeId = useSelector(selectSelectedId);
@@ -31,7 +34,7 @@ export default function Table() {
         <Loader/>
       </div> : <div> {
         Object.keys(foundNodes).length == 0 && searchLine ? <div className="custom-table__no-entries">
-          Ничего не найдено
+          {t('Nothing is found')}
         </div> : '' }
         </div>
       }

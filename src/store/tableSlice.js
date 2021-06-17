@@ -19,7 +19,8 @@ const initialState = {
 
       const newNodes = nodesResult.data.dbResponse;
       const { allCount } = nodesResult.data;
-      if (offset >= allCount) thunkAPI.dispatch(tableSlice.actions.setHasMore({ hasMore: false }));
+      if (offset + limit >= allCount) thunkAPI.dispatch(setHasMore({ hasMore: false }));
+      console.log('OFFSSS', offset, 'CCC', allCount);
 
       const newNodesLength = newNodes.length;
       newNodes.forEach((nodeObject) => {
@@ -79,7 +80,7 @@ export const fetchNewNodesThunk = createAsyncThunk(
     thunkAPI.dispatch(setNodes({ nodes: [...sortedNodes] }));
     thunkAPI.dispatch(setNodesCopy({ nodes: [...sortedNodes] }));
 
-    if (offset >= allCount) thunkAPI.dispatch(tableSlice.actions.setHasMore({ hasMore: false }));
+    if (offset >= allCount) thunkAPI.dispatch(setHasMore({ hasMore: false }));
 
     const hasMore = selectHasMore(thunkAPI.getState());
     console.log(offset, allCount, hasMore);

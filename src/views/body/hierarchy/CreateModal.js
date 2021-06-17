@@ -4,8 +4,11 @@ import { showNotification } from 'store/notificationSlice';
 import { handleCreateAsync } from 'store/hierarchySlice';
 import validationUtils from "utils/validationUtils";
 
+import { useTranslation } from "react-i18next";
+
 export default function CreateModal(props) {
     const dispatch = useDispatch();
+    const { t } = useTranslation();
     const nodes = useSelector(selectNodes);
 
     const { nodeCreator,  setNodeCreator, toggleIsCreating, selectedId } = props;
@@ -13,17 +16,17 @@ export default function CreateModal(props) {
     const createNode = (nodeCreator, toggleIsCreating) => {
       const nodeName = nodeCreator.object.name;
       if (nodeName.trim() == '') {
-        dispatch(showNotification({ text: `Ошибка: не задано имя`, usedClasses: 'custom-notification_danger' }));
+        dispatch(showNotification({ text: `${t('Error: name is empty')}`, usedClasses: 'custom-notification_danger' }));
         toggleIsCreating();
         return;
       }
       dispatch(handleCreateAsync({ nodeCreator, toggleIsCreating })).then((result) => {
         if (result.error) {
           const error = JSON.parse(result.error.message);
-          dispatch(showNotification({ text: `Ошибка: ${error.data.message}`, usedClasses: 'custom-notification_danger' }));
+          dispatch(showNotification({ text: `${t('Error')}: ${error.data.message}`, usedClasses: 'custom-notification_danger' }));
           toggleIsCreating();  
         } else {
-          dispatch(showNotification({ text: `✓ Узел «${nodeName}» успешно создан`, usedClasses: 'custom-notification_success' }));
+          dispatch(showNotification({ text: `${t('NOTIFICATION.NODE_CREATED', { nodeName })}`, usedClasses: 'custom-notification_success' }));
           toggleIsCreating(); 
         }
       });
@@ -34,7 +37,7 @@ export default function CreateModal(props) {
       <div className="modal-dialog" role="document">
         <div className="modal-content" style={{ borderStyle: 'none' }}>
           <div className="modal-header">
-            <h5 className="modal-title">Новый узел</h5>
+            <h5 className="modal-title">{`${t('New node')}`}</h5>
             <button
               onClick={() => toggleIsCreating()}
               type="button" className="btn close" data-dismiss="modal" aria-label="Close">
@@ -52,7 +55,7 @@ export default function CreateModal(props) {
       setNodeCreator(newNodeCreator);
     }}
     disabled={selectedId == null}
-    className="form-control" placeholder="Имя узла" aria-label="Введите имя узла..."/>
+    className="form-control" placeholder={`${t('Node name')}`} aria-label={`${t('Enter node name')}`}/>
   </div>
   <div className="input-group mb-3">
     <input
@@ -66,9 +69,9 @@ export default function CreateModal(props) {
       type="text"
       className={`form-control ${nodeCreator.object.IP
         && !validationUtils.checkIP(nodeCreator.object.IP) ? 'is-invalid' : ''}`}
-      placeholder="IP-адрес" aria-label="Введите IP узла..."/>
+      placeholder={`${t('IP address')}`} aria-label={`${t('Enter node IP')}`}/>
       <div className="invalid-feedback">
-        IP-адрес введён некорректно
+        {`${t('IP address is incorrect')}`}
       </div>
   </div>
   <div className="input-group mb-3">
@@ -82,9 +85,9 @@ export default function CreateModal(props) {
       value={nodeCreator.object.port}
       disabled={selectedId == null}
       type="text" className={`form-control ${nodeCreator.object.port
-        && !validationUtils.checkPort(nodeCreator.object.port) ? 'is-invalid' : ''}`} placeholder="Web-порт" aria-label="Введите порт..."/>
+        && !validationUtils.checkPort(nodeCreator.object.port) ? 'is-invalid' : ''}`} placeholder={`${t('Web-port')}`} aria-label={`${t('Enter port')}`}/>
       <div className="invalid-feedback">
-        Неверное значение порта
+        {`${t('Port is incorrect')}`}
       </div>
   </div>
               
@@ -94,10 +97,10 @@ export default function CreateModal(props) {
               disabled={!nodeCreator.object.name || !nodeCreator.object.port || !nodeCreator.object.IP || 
                 !validationUtils.checkPort(nodeCreator.object.port) || !validationUtils.checkIP(nodeCreator.object.IP)}
               onClick={() => { createNode(nodeCreator, toggleIsCreating) }}
-              className="btn btn-primary">Создать</button>
+              className="btn btn-primary">{`${t('Create')}`}</button>
             <button 
               onClick={() => toggleIsCreating()}
-              type="button" className="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+              type="button" className="btn btn-secondary" data-dismiss="modal">{`${t('Close')}`}</button>
           </div>
         </div>
       </div>

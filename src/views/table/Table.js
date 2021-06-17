@@ -9,6 +9,8 @@ import undoSvg from 'assets/undo.svg';
 
 import Loader from 'views/utils/Loader';
 
+import { useTranslation } from 'react-i18next';
+
 import {
   handleSaveThunk,
   revertChangesThunk,
@@ -54,6 +56,7 @@ function useIntersection(element) {
 
 export default function Table() {
     const dispatch = useDispatch();
+    const { t } = useTranslation();
 
     const nodes = useSelector(selectNodes);
     const nodesCopy = useSelector(selectNodesCopy);
@@ -97,7 +100,7 @@ export default function Table() {
       dispatch(setHasMore({ hasMore: true }));
       offset = 0;
       const height = window.innerHeight;
-      limit = (height / 120) >> 0;
+      limit = (height / 70) >> 0;
       dispatch(purgeNodes());
       setIsLoaded(true);
     }, [false]);
@@ -106,23 +109,24 @@ export default function Table() {
       dispatch(handleSaveThunk({ nodeObject })).then((result) => {
         if (result.error) {
           const error = JSON.parse(result.error.message);
-          dispatch(showNotification({ text: `Ошибка: ${error}`, usedClasses: 'custom-notification_danger' }));
+          dispatch(showNotification({ text: `${t('Error')}: ${error}`, usedClasses: 'custom-notification_danger' }));
         } else {
-          dispatch(showNotification({ text: `✓ Узел «${nodeObject.name}» (ID: ${nodeObject.id}) успешно обновлён`, usedClasses: "custom-notification_info" }));  
+          dispatch(showNotification({ text: `${t('NOTIFICATION.NODE_UPDATED', { nodeName: nodeObject.name, nodeId: nodeObject.id })}`,
+          usedClasses: "custom-notification_info" }));  
         }
       });
     };
 
     const sortOrderElement = <div className={`d-flex d-align-items-center ${styles['custom-select']}`}>
-      <div className="d-inline-block" style={{marginRight: '12px', marginTop: '3px'}}> Сортировать </div>
+      <div className="d-inline-block" style={{marginRight: '12px', marginTop: '3px'}}> {`${t('Sort')}`} </div>
       <div className="d-inline-block">
         <select value={sortOrder} className={`form-select form-select-sm ${styles['select']}`}
           onChange={() => {
             const newValue = sortOrder * -1;
             setSortOrder(newValue);
           }} >
-          <option value={1}>По возрастанию</option>
-          <option value={-1}>По убыванию</option>
+          <option value={1}>{`${t('Ascending')}`}</option>
+          <option value={-1}>{`${t('Descending')}`}</option>
         </select>
       </div>
     </div>
@@ -150,7 +154,7 @@ export default function Table() {
               dispatch(setNodes({ nodes: newNodes }));
             }}
             type="text" className={`form-control`}
-            placeholder="Имя"/>
+            placeholder={`${t('Name')}`}/>
         </div>
             </td>
             <td>
@@ -170,7 +174,7 @@ export default function Table() {
                     type="text" className={`form-control ${ nodeObject.IP && !validationUtils.checkIP(nodeObject.IP) ? 'is-invalid' : '' }`}
                     placeholder="IP-адрес"/>
                   <div className="invalid-feedback">
-                    IP-адрес введён некорректно
+                    {`${t('IP address is incorrect')}`}
                   </div>
               </div>
             </td>
@@ -189,9 +193,9 @@ export default function Table() {
                       dispatch(setNodes({ nodes: newNodes }));
                     }}
                   type="text" className={`form-control ${ nodeObject.port && !validationUtils.checkPort(nodeObject.port) ? 'is-invalid' : '' }`}
-                  placeholder="Порт" aria-label="Введите порт..."/>
+                  placeholder="Порт" aria-label={t('Enter port')}/>
                   <div className="invalid-feedback">
-                    Значение порта введено некорректно
+                    {`${t('Port is incorrect')}`}
                   </div>
               </div>
             </td>
@@ -211,13 +215,14 @@ export default function Table() {
               }
 
               <button className="float-end"
+              style={{minWidth: '110px'}}
               onClick={() => { handleSave({ nodeObject }) }}
               disabled={
                 objectAndObjectInCopyAreSame({ nodes, nodesCopy, nodeId: nodeObject.id })
                 || !(nodeObject.name && nodeObject.name.trim() )
                 || !nodeObject.IP || !validationUtils.checkIP(nodeObject.IP) 
                 || !nodeObject.port || !validationUtils.checkPort(nodeObject.port) }
-              className="btn btn-primary">Сохранить</button>
+              className="btn btn-primary">{`${t('Save')}`}</button>
             </td>
       </tr>
     });
@@ -230,16 +235,16 @@ export default function Table() {
               <input
                 value={search}
                 onChange={(e) => { setSearch(e.target.value) }}
-                type="text" className="form-control" placeholder="Поиск..."/>
+                type="text" className="form-control" placeholder={`${t('Search')}...`}/>
               <div className="input-group-append" style={{marginLeft: "3px", minWidth: '100px'}}>
               <select value={searchBy} className={`form-select ${styles['select']}`}
           onChange={(e) => {
             const newValue = e.target.value;
             setSearchBy(newValue);
           }} >
-          <option value={SEARCH_CRITERIA.NAME}>Имя</option>
+          <option value={SEARCH_CRITERIA.NAME}>{`${t('Name')}`}</option>
           <option value={SEARCH_CRITERIA.IP}>IP</option>
-          <option value={SEARCH_CRITERIA.PORT}>Порт</option>
+          <option value={SEARCH_CRITERIA.PORT}>{`${t('Port')}`}</option>
         </select>
               </div>
             </div>
@@ -250,40 +255,40 @@ export default function Table() {
               <tr className="table">
                 <th style={{whiteSpace: 'nowrap'}} className={styles['no-bottom-line']} scope="col">
                   #
-                  <img alt="Сортировка"
+                  <img alt={`${t('Sorting')}`}
                   onClick={() => { setSortBy({ criteria: SORT_CRITERIA.ID, isNumber: true, sortOrder });
-                    dispatch(showNotification({ text: '✓ Отсортировано по ID узла', usedClasses: 'custom-notification_info' }));
+                    dispatch(showNotification({ text: `${t('NOTIFICATION.SORTED_BY_ID')}`, usedClasses: 'custom-notification_info' }));
                   }}
                   src={sortSvg} className={`${styles['sort-image']} ${sortBy.criteria == SORT_CRITERIA.ID ? styles['filter-icon'] : ''}`}></img>
                 </th>
                 <th className={styles['no-bottom-line']} scope="col">
-                  Узел
-                  <img alt="Сортировка"
+                  {`${t('Node')}`}
+                  <img alt={`${t('Sorting')}`}
                   onClick={() => { setSortBy({ criteria: SORT_CRITERIA.NAME, isNumber: false, sortOrder });
-                    dispatch(showNotification({ text: '✓ Отсортировано по имени узла', usedClasses: 'custom-notification_info' }));
+                    dispatch(showNotification({ text: `${t('NOTIFICATION.SORTED_BY_NAME')}`, usedClasses: 'custom-notification_info' }));
                   }}
                   src={sortSvg} className={`${styles['sort-image']} ${sortBy.criteria == SORT_CRITERIA.NAME ? styles['filter-icon'] : ''}`}></img>
                 </th>
                 <th className={styles['no-bottom-line']} scope="col">
                   IP
-                  <img alt="Сортировка"
+                  <img alt={`${t('Sorting')}`}
                   onClick={() => { setSortBy({ criteria: SORT_CRITERIA.IP, isNumber: false, sortOrder });
-                    dispatch(showNotification({ text: '✓ Отсортировано по IP узла', usedClasses: 'custom-notification_info' }));
+                    dispatch(showNotification({ text: `${t('NOTIFICATION.SORTED_BY_IP')}`, usedClasses: 'custom-notification_info' }));
                   }}
                   src={sortSvg} className={`${styles['sort-image']} ${sortBy.criteria == SORT_CRITERIA.IP ? styles['filter-icon'] : ''}`}></img>
                 </th>
                 <th className={styles['no-bottom-line']} scope="col">
-                  Порт
-                  <img alt="Сортировка"
+                {`${t('Port')}`}
+                  <img alt={`${t('Sorting')}`}
                   onClick={() => { setSortBy({ criteria: SORT_CRITERIA.PORT, isNumber: true, sortOrder }); 
-                    dispatch(showNotification({ text: '✓ Отсортировано по значению порта узла', usedClasses: 'custom-notification_info' }));}}
+                    dispatch(showNotification({ text: `${t('NOTIFICATION.SORTED_BY_PORT')}`, usedClasses: 'custom-notification_info' }));}}
                   src={sortSvg} className={`${styles['sort-image']} ${sortBy.criteria == SORT_CRITERIA.PORT ? styles['filter-icon'] : ''}`}></img>
                 </th>
                 <th style={{whiteSpace: 'nowrap'}} className={styles['no-bottom-line']} scope="col">
-                  Родитель
-                  <img alt="Сортировка"
+                  {`${t('Parent')}`}
+                  <img alt={`${t('Sorting')}`}
                   onClick={() => { setSortBy({ criteria: SORT_CRITERIA.PARENT, isNumber: true, sortOrder });
-                    dispatch(showNotification({ text: '✓ Отсортировано по родителю узла', usedClasses: 'custom-notification_info' }));
+                    dispatch(showNotification({ text: `${t('NOTIFICATION.SORTED_BY_PARENT')}`, usedClasses: 'custom-notification_info' }));
                   }}
                   src={sortSvg} className={`${styles['sort-image']} ${sortBy.criteria == SORT_CRITERIA.PARENT ? styles['filter-icon'] : ''}`}></img>
                 </th>
@@ -301,7 +306,7 @@ export default function Table() {
 
         { (isFocusedOnIds.length == 0) && (isLoaded) &&
         searchFilter({ array: nodes, search, isFocusedOnIds, searchBy }).length == 0 ? <div className="mt-3 mb-3 text-center">
-          Ничего не найдено
+          {`${t('Nothing is found')}`}
         </div> : ''
         }
         {

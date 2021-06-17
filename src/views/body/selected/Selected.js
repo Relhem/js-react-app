@@ -13,12 +13,16 @@ import {
 import validationUtils from "../../../utils/validationUtils";
 import { selectSearchLine, setFoundNodeById } from "store/searchSlice";
 
+import { Trans, useTranslation } from "react-i18next";
+
+
 export default function Selected() {
     const selectedId = useSelector(selectSelectedId);
     const nodes = useSelector(selectNodes);
     const searchLine = useSelector(selectSearchLine);
 
     const dispatch = useDispatch();
+    const { t } = useTranslation();
 
     const [nodeName, setNodeName] = useState('');
     const [ip, setIp] = useState('');
@@ -60,7 +64,7 @@ export default function Selected() {
 
     const updateNode = (port, id, nodeName) => {
       if (nodeName.trim() === '') {
-        dispatch(showNotification({ text: `Ошибка: не задано имя`, usedClasses: 'alert-danger'}))
+        dispatch(showNotification({ text: `${`${t('Error: name is empty')}`}`, usedClasses: 'alert-danger'}))
         return;
       }
       if (!ip || !validationUtils.checkIP(ip) || !port || !validationUtils.checkPort(port)) return;
@@ -68,14 +72,16 @@ export default function Selected() {
       dispatch(handleUpdateAsync({ port, id, ip, nodeName })).then((result) => {
         if (result.error) {
           const error = JSON.parse(result.error.message);
-          dispatch(showNotification({ text: `Ошибка: ${error.data.message}`, usedClasses: 'custom-notification_danger'}));
+          dispatch(showNotification({ text: `${`${t('Error')}`}: ${error.data.message}`, usedClasses: 'custom-notification_danger'}));
         } else {
           setSavedState({ ip,
             port,
             id,
             nodeName });
           if (searchLine) dispatch(setFoundNodeById({ nodeId: id, options: { ip, port, name: nodeName, id } }));
-          dispatch(showNotification({ text: `✓ Узел «${selectedNode.name}» (ID: ${selectedId}) успешно обновлён`, usedClasses: 'custom-notification_info' }));
+          // dispatch(showNotification({ text: `✓ Узел «${selectedNode.name}» (ID: ${selectedId}) успешно обновлён`, usedClasses: 'custom-notification_info' }));
+          dispatch(showNotification({ text: `${t('NOTIFICATION.NODE_UPDATED', { nodeName: selectedNode.name, nodeId: selectedId })}`,
+          usedClasses: 'custom-notification_info' }));
         }
       });
     };
@@ -83,7 +89,7 @@ export default function Selected() {
 
     return <div>
       <div className="mb-3">
-        <div className="text-center"><strong>Редактирование узла</strong></div>
+        <div className="text-center"><strong><Trans>Node edit</Trans></strong></div>
       </div>
       <div className="mb-3">
         ID: <div className="d-inline-block pl-1">
@@ -97,16 +103,17 @@ export default function Selected() {
           value={nodeName}
           onChange={(e) => { 
             setNodeName(e.target.value) }}
-          className="form-control" placeholder="Имя узла" aria-label="Введите имя узла..."/>
+          className="form-control" placeholder={`${t('Node name')}`} aria-label={`${t('Enter node name')}`}/>
         </div>
         <div className="input-group mb-3">
           <input required
             disabled={selectedId == null}
             value={ip}
             onChange={(e) => { setIp(e.target.value); }}
-            type="text" className={`form-control ${ ip && !validationUtils.checkIP(ip) ? 'is-invalid' : '' }`} placeholder="IP-адрес" aria-label="Введите IP узла..."/>
+            type="text" className={`form-control ${ ip && !validationUtils.checkIP(ip) ? 'is-invalid' : '' }`} placeholder={`${t('IP-address')}`}
+            aria-label={`${t('Enter IP')}`}/>
             <div className="invalid-feedback">
-              IP-адрес введён некорректно
+            {`${t('IP address is incorrect')}`}
             </div>
         </div>
         <div className="input-group mb-3">
@@ -119,9 +126,10 @@ export default function Selected() {
             setPort(port);
             }
           }
-          type="text" className={`form-control ${ port && !validationUtils.checkPort(port) ? 'is-invalid' : '' }`} placeholder="Web-порт" aria-label="Введите порт..."/>
+          type="text" className={`form-control ${ port && !validationUtils.checkPort(port) ? 'is-invalid' : '' }`}
+          placeholder={`${t('Web-port')}`} aria-label={`${t('Input port...')}`}/>
         <div className="invalid-feedback">
-              Неверное значение порта
+            {`${t('Port is incorrect')}`}
         </div>
         </div>
       </div>
@@ -131,13 +139,13 @@ export default function Selected() {
               <button disabled={selectedId == null || !nodeName || nodeName.trim() == ''
                 || !validationUtils.checkIP(ip) || !validationUtils.checkPort(port) }
                 onClick={() => { updateNode(port, id, nodeName) }}
-                type="button" className="w-100 btn btn-primary btn-block">Сохранить</button>
+                type="button" className="w-100 btn btn-primary btn-block">{`${t('Save')}`}</button>
             </div>
             <div>
               <button 
                 disabled={selectedId == null}
                 onClick={() => { handleRollback() }}
-                type="button" className="w-100 btn btn-secondary btn-block">Отменить</button>
+                type="button" className="w-100 btn btn-secondary btn-block">{`${t('Cancel')}`}</button>
             </div>
           </div>
       </div>
