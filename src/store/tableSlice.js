@@ -75,12 +75,16 @@ export const fetchNewNodesThunk = createAsyncThunk(
     const { allCount } = fetchResult.data;
 
     const sortedNodes = sortArrayByCriteria({ array: [...nodes, ...fetchedNodes], sortCriteria: sortBy.criteria, isNumber: sortBy.isNumber, sortOrder });
+    console.log('##', sortedNodes);
     thunkAPI.dispatch(setNodes({ nodes: [...sortedNodes] }));
     thunkAPI.dispatch(setNodesCopy({ nodes: [...sortedNodes] }));
 
     if (offset >= allCount) thunkAPI.dispatch(tableSlice.actions.setHasMore({ hasMore: false }));
-    console.log(offset, allCount, selectHasMore(thunkAPI.getState()));
-    return { hasMore: selectHasMore(thunkAPI.getState()) }
+
+    const hasMore = selectHasMore(thunkAPI.getState());
+    console.log(offset, allCount, hasMore);
+    console.log('###', nodes);
+    return { hasMore }
   }
 );
 
@@ -113,6 +117,6 @@ export const selectNodesCopy = (state) => state.table.nodesCopy;
 export const selectOffset = (state) => state.table.offset;
 export const selectHasMore = (state) => state.table.hasMore;
 
-export const { setNodes, setNodesCopy, setOffset, purgeNodes } = tableSlice.actions;
+export const { setNodes, setNodesCopy, setOffset, purgeNodes, setHasMore } = tableSlice.actions;
 
 export default tableSlice.reducer;

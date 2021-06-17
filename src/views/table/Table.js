@@ -1,6 +1,5 @@
 import styles from 'css/table/styles.module.scss';
-import { useEffect, useState } from 'react';
-import { fetchNodes, updateNode } from 'api/hierarchyAPI';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import validationUtils from 'utils/validationUtils';
 import { useDispatch, useSelector } from 'react-redux';
 import { showNotification } from 'store/notificationSlice';
@@ -11,7 +10,6 @@ import undoSvg from 'assets/undo.svg';
 import Loader from 'views/utils/Loader';
 
 import {
-  fetchNewNodesThunk,
   handleSaveThunk,
   revertChangesThunk,
   addNewNodesThunk,
@@ -20,11 +18,39 @@ import {
   selectNodes,
   selectNodesCopy, 
   purgeNodes,
-  selectHasMore} from 'store/tableSlice';
+  selectHasMore, 
+  setHasMore } from 'store/tableSlice';
 
 import { SORT_CRITERIA, SEARCH_CRITERIA, sortArrayByCriteria, searchFilter, objectAndObjectInCopyAreSame } from 'utils/tableUtils';
 
 let offset = 0, limit = 5;
+
+function useIntersection(element) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  const callback = useCallback((entries) => {
+    const { isIntersecting } = entries[0];
+    if (isIntersecting) setIsVisible(true);
+    else setIsVisible(false);
+  });
+
+  useEffect(() => {
+    let options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0,
+    }
+    
+    const observer = new IntersectionObserver(callback, options);
+
+    if (element.current) observer.observe(element.current);
+    return () => {
+      observer ?? observer.unobserve(element.current);
+    };
+  }, [false]);
+
+  return isVisible;
+}
 
 export default function Table() {
     const dispatch = useDispatch();
@@ -45,24 +71,17 @@ export default function Table() {
 
     const [searchBy, setSearchBy] = useState(SEARCH_CRITERIA.NAME);
 
-    const [isLoadingNew, setIsLoadingNew] = useState(false);
+    const loader = useRef(null);
 
-    const addNewNodes = () => {
-      if (search) return;
-      if (!isLoadingNew && hasMore) {
-        setIsLoadingNew(true);
-        dispatch(addNewNodesThunk({ offset, limit })).then(() => {
-          offset += 5;
-          setIsLoadingNew(false);
+    const isIntersected = useIntersection(loader);
+
+    useEffect(() => {
+      if (isIntersected) {
+        return dispatch(addNewNodesThunk({ offset, limit })).then(() => {
+          offset += limit;
         });
       }
-    };
-
-    window.onscroll = function(ev) {
-      if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 50)) {
-        addNewNodes();
-      }
-    };
+    }, [isIntersected]);
 
     useEffect(() => {
       setIsFocusedOnIds([]);
@@ -74,26 +93,12 @@ export default function Table() {
       dispatch(setNodesCopy({ nodes: nodesArray }));
     }, [sortBy, sortOrder]);
 
-    const fetchInitialNodes = async () => {
-      const dispatchResult = await dispatch(fetchNewNodesThunk({ offset, limit, sortBy, sortOrder }));
-      const { hasMore } = dispatchResult.payload;
-      offset += 5;
-      if (window.innerWidth <= document.body.clientWidth) {
-        if (hasMore) {
-          await new Promise((resolve) => {
-            setTimeout(async () => {
-                fetchInitialNodes();
-                resolve();
-            }, 0);
-          });
-        }
-      }
-    };
-
     useEffect(async () => {
+      dispatch(setHasMore({ hasMore: true }));
       offset = 0;
+      const height = window.innerHeight;
+      limit = (height / 120) >> 0;
       dispatch(purgeNodes());
-      fetchInitialNodes();
       setIsLoaded(true);
     }, [false]);
 
@@ -301,9 +306,13 @@ export default function Table() {
         }
         {
           hasMore && !search && isLoaded ?
-          <div onClick={() => { addNewNodes() }} className={styles['down-arrow-block']}>
+          <div onClick={() => { dispatch(addNewNodesThunk({ offset, limit }));
+              offset += limit;
+            }}
+            className={styles['down-arrow-block']}>
             <div>&#8675;</div>
           </div>  : ''
         }
+        <div ref={loader}/>
     </div>
 }
