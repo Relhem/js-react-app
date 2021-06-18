@@ -1,0 +1,63 @@
+.login-container {
+    background: white;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    max-width: 450px !important;
+    padding: 30px !important;
+}
+
+.chat-container {
+    background: white;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 30px !important;
+}
+
+
+.login-label {
+    margin-bottom: 10px;
+}
+
+.login-button {
+    margin-top: 20px;
+}
+
+.chatapp-user-item {
+    padding: 5px 10px 5px 30px;
+    margin-bottom: 3px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.chatapp-user-icon {
+  height: 15px;
+  margin-right: 10px;
+  position: absolute;
+  margin-left: -19px;
+  margin-top: 5px;
+}
+
+.chatapp-messages-block {
+  height: 400px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 15px 20px !important;
+  overflow-y: auto;
+}
+
+.chatapp-input {
+  max-width: calc(100%);
+}
+
+.chatapp-send-button {
+  margin-top: 16px;
+  margin-left: 5px;
+}
+.chatapp-message-item {
+  margin-bottom: 5px;
+}

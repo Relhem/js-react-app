@@ -7,17 +7,9 @@ import * as serviceWorker from './serviceWorker';
 import './css/index.scss';
 import { BrowserRouter } from 'react-router-dom';
 import './i18n';
+import { initWsClient } from 'websocket/client';
 
-
-export const wsClient = new WebSocket('ws://localhost:9000');
-wsClient.onopen = function () {
-  console.log('WebSocket Connected');
-};
-
-/* wsClient.onmessage = function (message) {
-  console.log('message', message);
-} */
-
+initWsClient();
 
 ReactDOM.render(
   <React.StrictMode>

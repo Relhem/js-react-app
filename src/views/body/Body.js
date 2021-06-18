@@ -8,7 +8,7 @@ import { selectSearchLine } from 'store/searchSlice';
 import Table from './table/Table';
 import { clearNodes, setSelectedNode } from 'store/hierarchySlice';
 
-import { Trans, t, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 const Body = () => {
   const dispatch = useDispatch();

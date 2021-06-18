@@ -27,6 +27,7 @@ const resources = {
   },
   ru: {
     translation: {
+        'Chat': 'Чат',
         'Nothing is found': 'Ничего не найдено',
         'Hierarchy': 'Иерархия',
         'Table': 'Таблица',

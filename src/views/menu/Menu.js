@@ -3,25 +3,24 @@ import { Link, useLocation } from 'react-router-dom';
 
 import { useTranslation } from 'react-i18next';
 
-import { wsClient } from 'index';
+import { wsClient, wsHandlers } from 'websocket/client';
 import { useEffect, useState } from 'react';
 
 function WebSocketBar() {
   const [barValue, setBarValue] = useState(0);
 
   const sendPosition = ({ position }) => {
-    if (wsClient.readyState === wsClient.OPEN) {
-      wsClient.send(JSON.stringify({action: 'SEND_VALUE', value: position }));
+    if (wsClient.client.readyState === wsClient.client.OPEN) {
+      wsClient.client.send(JSON.stringify({action: 'SEND_VALUE', value: position }));
     }
   };
 
-  wsClient.onmessage = function (msg) {
-    const { data } = msg;
-    const message = JSON.parse(data);
+  wsHandlers.setHandler({ id: 'MENU.SET_VALUE', handler: (msg) => {
+    const message = wsClient.parseResponse(msg);
     if (message.action === 'SET_VALUE') {
       setBarValue(message.value);
     }
-  }
+  }});
 
   useEffect(() => {
     sendPosition({ position: barValue })
@@ -56,6 +55,13 @@ export default function Menu() {
                 <Link to='/table'>
                   <div className={`${pathname === '/table' ? styles['selected'] : ''}`}>
                     {t('Table')}
+                  </div>
+                </Link>
+              </div>
+              <div className={`${styles['menu__row__item']} ${pathname === '/chat' ? styles['menu__row__item_selected'] : ''}`}>
+                <Link to='/chat'>
+                  <div className={`${pathname === '/chat' ? styles['selected'] : ''}`}>
+                    {t('Chat')}
                   </div>
                 </Link>
               </div>

@@ -4,6 +4,7 @@ import hierarchyReducer from 'store/hierarchySlice';
 import notificationReducer from 'store/notificationSlice';
 import searchSliceReducer from './searchSlice';
 import tableSliceReducer from './tableSlice';
+import chatSliceReducer from './chatSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,5 +13,6 @@ export const store = configureStore({
     notification: notificationReducer,
     search: searchSliceReducer,
     table: tableSliceReducer,
+    chat: chatSliceReducer,
   },
 });
